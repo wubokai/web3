@@ -169,8 +169,64 @@ contract MiniERC721Test is Test {
         nft.transferFrom(alice, address(0), 1);
     }
 
+    function test_BurnByOwner() public {
+        nft.mint(alice, 1);
 
+        vm.prank(alice);
+        nft.burn(1);
 
+        assertEq(nft.balanceOf(alice), 0);
+        assertEq(nft.ownerOf(1), address(0));
+    }
 
+    function test_BurnByApprovedAddress() public {
+        nft.mint(alice, 1);
+
+        vm.prank(alice);
+        nft.approve(bob, 1);
+
+        vm.prank(bob);
+        nft.burn(1);
+
+        assertEq(nft.balanceOf(alice), 0);
+        assertEq(nft.ownerOf(1), address(0));
+        assertEq(nft.getApproved(1), address(0));
+    }
+
+    function test_RevertIf_BurnByUnauthorized() public {
+        nft.mint(alice, 1);
+
+        vm.prank(bob);
+        vm.expectRevert(MiniERC721.NotAuthorized.selector);
+        nft.burn(1);
+    }
+
+    function test_SafeTransferToEOA() public {
+        nft.mint(alice, 1);
+
+        vm.prank(alice);
+        nft.safeTransferFrom(alice, bob, 1);
+
+        assertEq(nft.ownerOf(1), bob);
+    }
+
+    function test_SafeTransferToGoodReceiver() public {
+        nft.mint(alice, 1);
+
+        vm.prank(alice);
+        nft.safeTransferFrom(alice, address(goodReceiver), 1);
+
+        assertEq(nft.ownerOf(1), address(goodReceiver));
+        assertEq(nft.balanceOf(alice), 0);
+        assertEq(nft.balanceOf(address(goodReceiver)), 1);
+    }
+
+    function test_RevertIf_SafeTransferToBadReceiver() public {
+        nft.mint(alice, 1);
+
+        vm.prank(alice);
+        vm.expectRevert(MiniERC721.UnsafeRecipient.selector);
+        nft.safeTransferFrom(alice, address(badReceiver), 1);
+    }
 
 }
