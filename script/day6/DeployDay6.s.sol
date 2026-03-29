@@ -5,7 +5,7 @@ import "../../lib/forge-std/src/Script.sol";
 import "../../src/day6/MockERC20.sol";
 import "../../src/day6/MiniTokenVesting.sol";
 
-contract DeployMiniTokenVesting is Script {
+contract DeployDay6 is Script {
     function run() external{
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address deployer = vm.addr(deployerPrivateKey);
