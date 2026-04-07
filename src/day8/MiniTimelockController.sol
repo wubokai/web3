@@ -70,7 +70,7 @@ contract MiniTimelockController {
         uint256 executeTime
     ) external onlyAdmin returns (bytes32 id) {
         if(target == address(0)) revert ZeroAddress();
-        if(executeTime<block.timestamp + minDelay) revert InvalidDelay();
+        if(executeTime<block.timestamp + minDelay) revert InvalidExecuteTime();
 
         id = hashOperation(target, value, data, executeTime);
 
@@ -84,8 +84,8 @@ contract MiniTimelockController {
     }
 
     function cancel(bytes32 id) external onlyAdmin {
-        if(timestamps[id] == 0) revert OperationNotQueued();
         if(executed[id]) revert OperationAlreadyExecuted();
+        if(timestamps[id] == 0) revert OperationNotQueued();
 
         delete timestamps[id];
 
@@ -102,8 +102,8 @@ contract MiniTimelockController {
         bytes32 id = hashOperation(target, value, data, executeTime);
 
         uint256 queuedTime = timestamps[id];
-        if (queuedTime == 0) revert OperationNotQueued();
         if (executed[id]) revert OperationAlreadyExecuted();
+        if (queuedTime == 0) revert OperationNotQueued();
         if (block.timestamp < queuedTime) revert OperationNotReady();
 
         executed[id] = true;

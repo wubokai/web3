@@ -103,4 +103,33 @@ contract MiniTimelockControllerTest is Test {
         vm.stopPrank();
     }
 
+    function testExecuteTwiceRevertsAsAlreadyExecuted() public {
+        uint256 executeTime = block.timestamp + MIN_DELAY;
+        bytes memory data = abi.encodeCall(TestTarget.setNumber, (123));
+
+        vm.prank(admin);
+        timelock.schedule(address(target), 0, data, executeTime);
+
+        vm.warp(executeTime);
+        timelock.execute(address(target), 0, data, executeTime);
+
+        vm.expectRevert(MiniTimelockController.OperationAlreadyExecuted.selector);
+        timelock.execute(address(target), 0, data, executeTime);
+    }
+
+    function testCannotCancelExecutedOperation() public {
+        uint256 executeTime = block.timestamp + MIN_DELAY;
+        bytes memory data = abi.encodeCall(TestTarget.setNumber, (123));
+        bytes32 id = keccak256(abi.encode(address(target), 0, data, executeTime));
+
+        vm.prank(admin);
+        timelock.schedule(address(target), 0, data, executeTime);
+
+        vm.warp(executeTime);
+        timelock.execute(address(target), 0, data, executeTime);
+
+        vm.prank(admin);
+        vm.expectRevert(MiniTimelockController.OperationAlreadyExecuted.selector);
+        timelock.cancel(id);
+    }
 }
