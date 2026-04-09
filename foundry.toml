@@ -5,6 +5,7 @@ libs = ["lib"]
 test = "test"
 script = "script"
 solc_version = "0.8.24"
+viaIR = true
 
 [fuzz]
 runs = 256
